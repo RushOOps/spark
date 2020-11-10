@@ -6,10 +6,10 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.bson.Document
 import util.StringUtil
 
-object Chat {
+object Baike {
   def main(args: Array[String]): Unit = {
 
-    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_chat_1105-1109")
+    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_baike_1105-1109")
     val sc = new SparkContext(conf)
 
     val input = sc.textFile("hdfs://hadoop1:9000"+args(0))
@@ -18,17 +18,23 @@ object Chat {
       .filter(record => {
         val domain = record.getString("return_domain")
         StringUtil.isNotEmpty(domain) &&
-          domain.equals("CHAT") &&
-          StringUtil.isNotEmpty(record.getString("query_text"))
+          domain.equals("BAIKE")
       })
       .map(record => {
-        (record.getString("query_text"), 1)
+        val value = new JSONObject()
+        value.put("intent", record.getString("return_intent"))
+        value.put("semantic", record.getJSONObject("return_semantic"))
+        (record.getString("query_text"), value.toString())
       })
-      .reduceByKey(_+_)
+      .groupByKey()
       .map(record => {
+        val total = record._2.iterator.size
+        val value = JSON.parseObject(record._2.iterator.next())
         new Document()
           .append("query_text", record._1)
-          .append("count", record._2)
+          .append("intent", value.getString("intent"))
+          .append("semantic", value.getJSONObject("semantic"))
+          .append("count", total)
       })
 
     MongoSpark.save(result)
