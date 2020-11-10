@@ -19,9 +19,10 @@ object MacCount {
       .filter(record => {
         if(StringUtil.isEmpty(record.getString("query_mac"))){
           emptyMac.add(1)
-          return false
+          false
+        }else{
+          true
         }
-        true
       })
       .map(record => record.getString("query_mac"))
       .distinct()
