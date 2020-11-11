@@ -9,9 +9,10 @@ import util.StringUtil
 object OnlineDomain {
   def main(args: Array[String]): Unit = {
 
-    val domainInclude = Array("VR", "WorldRecords", "IDIOM", "POEM", "JOKE", "REMINDER", "HISTORY", "HTWHYS", "DISEASE", "STORY")
+//    val domainInclude = Array("VR", "WorldRecords", "IDIOM", "POEM", "JOKE", "REMINDER", "HISTORY", "HTWHYS", "DISEASE", "STORY")
+    val domainInclude = Array("TIME", "RECIPE")
 
-    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_tencent_online_domain")
+    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_time_recipe")
 //    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_tencent_online_domain").setMaster("local[*]").setAppName("test")
     val sc = new SparkContext(conf)
 
@@ -21,9 +22,6 @@ object OnlineDomain {
     val result = input.map(record => JSON.parseObject(record))
       .filter(record => {
         val domain = record.getString("return_domain")
-        val sourceFlag = record.getInteger("source_flag")
-        sourceFlag != null &&
-          sourceFlag == 5 &&
           StringUtil.isNotEmpty(domain) &&
           domainInclude.contains(domain) &&
           StringUtil.isNotEmpty(record.getString("query_text"))
@@ -33,7 +31,6 @@ object OnlineDomain {
         value.put("domain", record.getString("return_domain"))
         value.put("intent", record.getString("return_intent"))
         value.put("semantic", record.getJSONObject("return_semantic"))
-        value.put("source_flag", record.getInteger("source_flag"))
         (record.getString("query_text"), value.toString())
       })
       .groupByKey()
@@ -45,7 +42,6 @@ object OnlineDomain {
           .append("domain", value.getString("domain"))
           .append("intent", value.getString("intent"))
           .append("semantic", value.getJSONObject("semantic"))
-          .append("source_flag", value.getInteger("source_flag"))
           .append("count", total)
       })
 
