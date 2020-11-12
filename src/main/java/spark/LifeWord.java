@@ -64,13 +64,14 @@ public class LifeWord {
                     JSONObject keyJson = new JSONObject();
                     keyJson.put("query_text", record.getString("query_text"));
                     keyJson.put("domain", record.getString("return_domain"));
-                    return new Tuple2<>(keyJson, 1);
+                    return new Tuple2<>(keyJson.toString(), 1);
                 })
                 .reduceByKey(Integer::sum)
                 .map(record -> {
                     Document doc = new Document();
-                    doc.put("query_text", record._1.getString("query_text"));
-                    doc.put("domain", record._1.getString("domain"));
+                    JSONObject keyJson = JSONObject.parseObject(record._1);
+                    doc.put("query_text", keyJson.getString("query_text"));
+                    doc.put("domain", keyJson.getString("domain"));
                     doc.put("count", record._2);
                     return doc;
                 });
