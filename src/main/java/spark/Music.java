@@ -46,7 +46,7 @@ public class Music {
     public static void main(String[] args) {
         SparkConf conf = new SparkConf()
                 .set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_music_ktv");
-        JavaSparkContext jsc = new JavaSparkContext();
+        JavaSparkContext jsc = new JavaSparkContext(conf);
 
         JavaRDD<String> input = jsc.textFile("hdfs://hadoop1:9000"+args[0]);
 
