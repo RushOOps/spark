@@ -30,7 +30,7 @@ public class OnlineDomain {
             add("STORY");
             add("PhoneCall");
             add("FOOD");
-            add("Weather");
+            add("WEATHER");
         }
     };
 
