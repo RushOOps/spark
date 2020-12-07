@@ -10,12 +10,13 @@ import util.StringUtil
 object SemanticTest {
   def main(args: Array[String]): Unit = {
 
-    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_test_11")
+    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic."+args(0))
     val sc = new SparkContext(conf)
 
-    val bc = sc.broadcast(Array("APP", "CONTROL", "TV", "VIDEO", "MUSIC"))
+    val domains = sc.textFile(System.getenv("SPARK_YARN_STAGING_DIR")+"/domains.txt").collect.toList
+    val bc = sc.broadcast(domains)
 
-    val input = sc.textFile("hdfs://hadoop1:9000"+args(0))
+    val input = sc.textFile("hdfs://hadoop1:9000/execDir")
 
     val result = input.map(record => JSON.parseObject(record))
       .filter(record => {
