@@ -8,22 +8,19 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.bson.Document
 import util.StringUtil
 
-object SemanticTest {
+object SemanticTestWithoutDomain {
   def main(args: Array[String]): Unit = {
 
-    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic."+args(0))
+    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_all_domain")
     val sc = new SparkContext(conf)
 
-    val domains = sc.textFile(System.getenv("SPARK_YARN_STAGING_DIR")+"/domains.txt").collect.toList
     val input = sc.textFile("hdfs://hadoop1:9000/execDir")
 
-    val bc = sc.broadcast(domains)
-
-    val result = input.map(record => JSON.parseObject(record))
+    val result = input
+      .map(record => JSON.parseObject(record))
       .filter(record => {
-        val domain = record.getString("return_domain")
-        StringUtil.isNotEmpty(domain) &&
-          bc.value.contains(domain)
+        StringUtil.isNotEmpty(record.getString("return_domain")) &&
+          StringUtil.isNotEmpty(record.getString("query_text"))
       })
       .map(record => {
         val semantic = new Semantic(record.getString("query_text"),
