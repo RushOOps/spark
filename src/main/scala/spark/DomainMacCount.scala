@@ -6,7 +6,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.bson.Document
 import util.StringUtil
 
-object DiseaseMacCount {
+object DomainMacCount {
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic."+args(1))
     val sc = new SparkContext(conf)
@@ -18,7 +18,7 @@ object DiseaseMacCount {
       .filter(record => {
         val domain = record.getString("return_domain")
         StringUtil.isNotEmpty(domain) &&
-          domain.equals("DISEASE") &&
+          domain.equals(args(2)) &&
           StringUtil.isNotEmpty(record.getString("query_text"))
       })
       .map(record => (record.getString("query_mac"), 1))
