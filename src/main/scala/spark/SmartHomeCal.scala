@@ -9,7 +9,7 @@ import util.StringUtil
 
 import scala.collection.mutable.ArrayBuffer
 
-object SmartHome {
+object SmartHomeCal {
 
   def main(args: Array[String]): Unit = {
     val arr = Array("扫地机", "猫眼", "门", "摄像头", "监控", "净化", "加湿", "除湿")
