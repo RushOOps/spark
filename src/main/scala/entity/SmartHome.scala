@@ -1,12 +1,10 @@
 package entity
 
-import com.alibaba.fastjson.JSONObject
-
 class SmartHome(val device: String,
                 val queryText: String,
                 val domain: String,
                 val intent: String,
-                val semantic: JSONObject) extends Serializable {
+                val semantic: String = null) extends Serializable {
 
   override def hashCode(): Int = {
     var result = 17
