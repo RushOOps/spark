@@ -2,6 +2,7 @@ package entity
 
 class DiseaseChat(
                 val queryText: String,
+                val domain: String,
                 val disease: String) extends Serializable {
 
   override def hashCode(): Int = {

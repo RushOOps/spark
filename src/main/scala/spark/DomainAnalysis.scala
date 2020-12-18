@@ -11,25 +11,27 @@ import util.StringUtil
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
-object FoodCache {
+object DomainAnalysis {
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.placeholder")
     val sc = new SparkContext(conf)
 
-    // Create a custom WriteConfig
     val writeOverrides = mutable.Map[String, String]()
-    writeOverrides.put("collection", "semantic_cache_food_all_07-11")
+    writeOverrides.put("collection", "semantic_"+args(0)+"_all_"+args(1))
     writeOverrides.put("writeConcern.w", "majority")
     var writeConfig = WriteConfig.create(sc).withOptions(writeOverrides)
+    
+    val bcDomain = sc.broadcast(args(0))
+    val bcItem = sc.broadcast(args(2))
 
-    val input = sc.textFile("hdfs://hadoop1:9000" + args(0))
+    val input = sc.textFile("hdfs://hadoop1:9000/execDir")
     val food = input
       .map(JSON.parseObject)
       .filter(record =>{
         val domain = record.getString("return_domain")
         StringUtil.isNotEmpty(record.getString("query_text")) &&
           StringUtil.isNotEmpty(domain) &&
-          domain.equals("FOOD")
+          domain.equals(bcDomain.value)
       }).cache()
 
     // job1 All
@@ -53,7 +55,7 @@ object FoodCache {
     MongoSpark.save(resultAll, writeConfig)
 
     // job2 Semantic
-    writeOverrides.put("collection", "semantic_cache_food_semantic_07-11")
+    writeOverrides.put("collection", "semantic_"+args(0)+"_semantic_"+args(1))
     writeConfig = WriteConfig.create(sc).withOptions(writeOverrides)
 
     val resultSemantic = food
@@ -76,19 +78,18 @@ object FoodCache {
     MongoSpark.save(resultSemantic, writeConfig)
 
     // job3 Time
-    writeOverrides.put("collection", "semantic_cache_food_time_07-11")
+    writeOverrides.put("collection", "semantic_"+args(0)+"_time_"+args(1))
     writeConfig = WriteConfig.create(sc).withOptions(writeOverrides)
 
     val resultTime = food
       .map(record => {
         val time = record.getString("time").split(" ")(0).split("-")
-        ((record.getJSONObject("return_semantic").getString("food"), time(1), time(2)), 1)
+        ((record.getJSONObject("return_semantic").getString(bcItem.value), time(1)), 1)
       })
       .reduceByKey(_+_)
       .map(record => new Document()
-        .append("food", record._1._1)
+        .append(bcItem.value, record._1._1)
         .append("month", record._1._2)
-        .append("day", record._1._3)
         .append("count", record._2)
       )
 

@@ -9,9 +9,9 @@ import util.StringUtil
 
 import scala.collection.mutable.ArrayBuffer
 
-object DiseaseInChat {
+object DiseaseInOthers {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_disease_chat")
+    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_disease_others_"+args(0))
     val sc = new SparkContext(conf)
 
     val disease = sc.textFile(System.getenv("SPARK_YARN_STAGING_DIR")+"/disease.txt").collect.toList
@@ -22,7 +22,7 @@ object DiseaseInChat {
       .map(JSON.parseObject)
       .filter(record => {
         val domain = record.getString("return_domain")
-        StringUtil.isNotEmpty(domain) && domain.equals("CHAT") &&
+        StringUtil.isNotEmpty(domain) && (domain.equals("CHAT") || domain.equals("BAIKE")) &&
           StringUtil.isNotEmpty(record.getString("query_text"))
       })
       .flatMap(record => {
@@ -30,7 +30,7 @@ object DiseaseInChat {
         val queryText = record.getString("query_text")
         for(disease <- bc.value){
           if(queryText.contains(disease)){
-            flatMapResult.append((new DiseaseChat(queryText, disease), 1))
+            flatMapResult.append((new DiseaseChat(queryText, record.getString("return_domain"), disease), 1))
           }
         }
         flatMapResult
@@ -38,6 +38,7 @@ object DiseaseInChat {
       .reduceByKey(_+_)
       .map(record => new Document()
         .append("query_text", record._1.queryText)
+        .append("domain", record._1.domain)
         .append("disease", record._1.disease)
         .append("count", record._2))
 

@@ -37,6 +37,7 @@ object SmartHomeCal {
         .append("query_text", record._1.queryText)
         .append("domain", record._1.domain)
         .append("intent", record._1.intent)
+        .append("device", record._1.device)
         .append("count", record._2))
 
     MongoSpark.save(result)
