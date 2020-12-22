@@ -3,7 +3,6 @@ package spark
 import com.alibaba.fastjson.JSON
 import com.mongodb.spark.MongoSpark
 import entity.Semantic
-import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.bson.Document
 import util.StringUtil
