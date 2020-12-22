@@ -82,6 +82,7 @@ object DomainAnalysis {
     writeConfig = WriteConfig.create(sc).withOptions(writeOverrides)
 
     val resultTime = food
+      .filter(record => StringUtil.isNotEmpty(record.getJSONObject("return_semantic").getString(bcItem.value)))
       .map(record => {
         val time = record.getString("time").split(" ")(0).split("-")
         ((record.getJSONObject("return_semantic").getString(bcItem.value), time(1)), 1)
