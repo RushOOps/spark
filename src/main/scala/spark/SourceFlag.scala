@@ -6,7 +6,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.bson.Document
 import util.StringUtil
 
-object Video {
+object SourceFlag {
   def main(args: Array[String]): Unit = {
 
     val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_video_09")
