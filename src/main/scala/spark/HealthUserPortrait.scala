@@ -13,7 +13,7 @@ import scala.collection.mutable.ArrayBuffer
 object HealthUserPortrait {
   def main(args: Array[String]): Unit = {
 
-    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_user_portrait_analysis_0701-1224")
+    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_user_portrait_analysis_0701-1229")
     val sc = new SparkContext(conf)
 
     val words = sc.textFile(System.getenv("SPARK_YARN_STAGING_DIR")+"/domains.txt").collect.toList
@@ -32,7 +32,7 @@ object HealthUserPortrait {
         val collection = client.getDatabase("SemanticLog").getCollection("mac_label")
         val returnArr = ArrayBuffer.empty[JSONObject]
         partition.foreach(record => {
-          if(collection.countDocuments(new Document("mac", record.getString("query_mac"))) > 0){
+          if(collection.countDocuments(new Document("mac", record.getString("query_mac"))) == 0){
             returnArr.append(record)
           }
         })

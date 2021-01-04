@@ -27,7 +27,7 @@ object HealthData {
         val collection = client.getDatabase("SemanticLog").getCollection("mac_label")
         val returnArr = ArrayBuffer.empty[JSONObject]
         partition.foreach(record => {
-          if(collection.countDocuments(new Document("mac", record.getString("query_mac"))) > 0){
+          if(collection.countDocuments(new Document("mac", record.getString("query_mac"))) == 0){
             returnArr.append(record)
           }
         })
