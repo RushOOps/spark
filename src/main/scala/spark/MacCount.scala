@@ -13,7 +13,7 @@ object MacCount {
     val macRecord = sc.longAccumulator("MacRecord")
     val emptyMac = sc.longAccumulator("emptyMac")
 
-    val input = sc.textFile("hdfs://hadoop1:9000"+args(0))
+    val input = sc.textFile("hdfs://hadoop1:9000/execDir")
 
     input.map(record => JSON.parseObject(record))
       .filter(record => {

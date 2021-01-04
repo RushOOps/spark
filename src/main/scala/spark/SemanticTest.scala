@@ -13,7 +13,7 @@ object SemanticTest {
     val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic."+args(0))
     val sc = new SparkContext(conf)
 
-    val domains = sc.textFile(System.getenv("SPARK_YARN_STAGING_DIR")+"/domains.txt").collect.toList
+    val domains = sc.textFile(System.getenv("SPARK_YARN_STAGING_DIR")+"/"+args(1)).collect.toList
     val input = sc.textFile("hdfs://hadoop1:9000/execDir")
 
     val bc = sc.broadcast(domains)
