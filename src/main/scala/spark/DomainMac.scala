@@ -1,10 +1,13 @@
 package spark
 
-import com.alibaba.fastjson.JSON
+import com.alibaba.fastjson.{JSON, JSONObject}
+import com.mongodb.MongoClient
 import com.mongodb.spark.MongoSpark
 import org.apache.spark.{SparkConf, SparkContext}
 import org.bson.Document
 import util.StringUtil
+
+import scala.collection.mutable.ArrayBuffer
 
 object DomainMac {
   def main(args: Array[String]): Unit = {
@@ -18,6 +21,18 @@ object DomainMac {
       .filter(record => {
         val domain = record.getString("return_domain")
         StringUtil.isNotEmpty(domain) && domain.equals(args(1))
+      })
+      .mapPartitions(partition => {
+        val client = new MongoClient("10.66.188.17", 27017)
+        val collection = client.getDatabase("SemanticLog").getCollection("mac_label")
+        val returnArr = ArrayBuffer.empty[JSONObject]
+        partition.foreach(record => {
+          if(collection.countDocuments(new Document("mac", record.getString("query_mac"))) == 0){
+            returnArr.append(record)
+          }
+        })
+        client.close()
+        returnArr.iterator
       })
       .map(record => (record.getString("query_mac"), 1))
       .reduceByKey(_+_)
