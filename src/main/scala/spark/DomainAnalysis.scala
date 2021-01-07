@@ -92,25 +92,6 @@ object DomainAnalysis {
 
     MongoSpark.save(resultSemantic, writeConfig)
 
-    // job3 Time
-    writeOverrides.put("collection", "semantic_"+args(0)+"_time_"+args(1))
-    writeConfig = WriteConfig.create(sc).withOptions(writeOverrides)
-
-    val resultTime = food
-      .filter(record => StringUtil.isNotEmpty(record.getJSONObject("return_semantic").getString(bcItem.value)))
-      .map(record => {
-        val time = record.getString("time").split(" ")(0).split("-")
-        ((record.getJSONObject("return_semantic").getString(bcItem.value), time(1)), 1)
-      })
-      .reduceByKey(_+_)
-      .map(record => new Document()
-        .append(bcItem.value, record._1._1)
-        .append("month", record._1._2)
-        .append("count", record._2)
-      )
-
-    MongoSpark.save(resultTime, writeConfig)
-
     sc.stop()
   }
 

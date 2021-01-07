@@ -12,7 +12,7 @@ import scala.collection.mutable.ArrayBuffer
 object Universal {
 
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17/semantic.semantic_food_mac_7-12")
+    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17/semantic.semantic_recipe_mac_7-12")
     val sc = new SparkContext(conf)
 
     val input = sc.textFile("hdfs://hadoop1:9000/execDir")
@@ -23,8 +23,8 @@ object Universal {
         val domain = record.getString("return_domain")
         try{
           StringUtil.isNotEmpty(domain) &&
-            domain.equals("FOOD") &&
-            StringUtil.isNotEmpty(record.getJSONObject("return_semantic").getString("food"))
+            domain.equals("RECIPE") &&
+            StringUtil.isNotEmpty(record.getJSONObject("return_semantic").getString("recipeName"))
         } catch {
           case _: Exception => false
         }
@@ -41,10 +41,10 @@ object Universal {
         client.close()
         returnArr.iterator
       })
-      .map(record => ((record.getJSONObject("return_semantic").getString("food"), record.getString("query_mac")), 1))
+      .map(record => ((record.getJSONObject("return_semantic").getString("recipeName"), record.getString("query_mac")), 1))
       .reduceByKey(_+_)
       .map(record => new Document()
-        .append("food", record._1._1)
+        .append("recipeName", record._1._1)
         .append("mac", record._1._2)
         .append("count", record._2))
 
