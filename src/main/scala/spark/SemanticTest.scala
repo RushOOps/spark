@@ -1,14 +1,11 @@
 package spark
 
-import com.alibaba.fastjson.{JSON, JSONObject}
-import com.mongodb.MongoClient
+import com.alibaba.fastjson.JSON
 import com.mongodb.spark.MongoSpark
-import entity.SemanticTextMac
+import entity.SemanticText
 import org.apache.spark.{SparkConf, SparkContext}
 import org.bson.Document
 import util.StringUtil
-
-import scala.collection.mutable.ArrayBuffer
 
 object SemanticTest {
   def main(args: Array[String]): Unit = {
@@ -27,20 +24,8 @@ object SemanticTest {
         StringUtil.isNotEmpty(domain) &&
           bc.value.contains(domain)
       })
-      .mapPartitions(partition => {
-        val client = new MongoClient("10.66.188.17", 27017)
-        val collection = client.getDatabase("SemanticLog").getCollection("mac_label")
-        val returnArr = ArrayBuffer.empty[JSONObject]
-        partition.foreach(record => {
-          if(collection.countDocuments(new Document("mac", record.getString("query_mac"))) == 0){
-            returnArr.append(record)
-          }
-        })
-        client.close()
-        returnArr.iterator
-      })
       .map(record => {
-        val semantic = new SemanticTextMac(
+        val semantic = new SemanticText(
           record.getString("query_text"),
           record.getString("return_domain"),
           record.getString("return_intent"),
