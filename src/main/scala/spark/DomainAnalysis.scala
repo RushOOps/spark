@@ -24,7 +24,6 @@ object DomainAnalysis {
     var writeConfig = WriteConfig.create(sc).withOptions(writeOverrides)
     
     val bcDomain = sc.broadcast(args(0))
-    val bcItem = sc.broadcast(args(2))
 
     val input = sc.textFile("hdfs://hadoop1:9000/execDir")
     val food = input

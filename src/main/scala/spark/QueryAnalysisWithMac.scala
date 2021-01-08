@@ -10,7 +10,7 @@ import util.StringUtil
 
 import scala.collection.mutable.ArrayBuffer
 
-object SemanticTest {
+object QueryAnalysisWithMac {
   def main(args: Array[String]): Unit = {
 
     val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic."+args(0))
@@ -45,7 +45,8 @@ object SemanticTest {
           record.getString("return_domain"),
           record.getString("return_intent"),
           record.getJSONObject("return_semantic"),
-          record.getIntValue("source_flag"))
+          record.getIntValue("source_flag"),
+          record.getString("query_mac"))
         (semantic, 1)
       })
       .reduceByKey(_+_)
@@ -56,6 +57,7 @@ object SemanticTest {
           .append("intent", record._1.intent)
           .append("semantic", record._1.semantic)
           .append("source_flag", record._1.sourceFlag)
+          .append("mac", record._1.queryMac)
           .append("count", record._2)
       })
 

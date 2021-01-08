@@ -17,11 +17,7 @@ public class StringUtil {
 	 * @return
 	 */
 	public static boolean isEmpty(String str) {
-		if ("".equals(str) || str == null) {
-			return true;
-		} else {
-			return false;
-		}
+		return "".equals(str) || str == null;
 	}
 
 	/**
@@ -40,8 +36,8 @@ public class StringUtil {
 	 * @return
 	 */
 	public static boolean existStrArr(String str, String[] strArr) {
-		for (int i = 0; i < strArr.length; i++) {
-			if (strArr[i].equals(str)) {
+		for (String s : strArr) {
+			if (s.equals(str)) {
 				return true;
 			}
 		}

@@ -3,7 +3,7 @@ package spark
 import com.alibaba.fastjson.{JSON, JSONObject}
 import com.mongodb.MongoClient
 import com.mongodb.spark.MongoSpark
-import entity.Semantic
+import entity.SemanticTextMac
 import org.apache.spark.{SparkConf, SparkContext}
 import org.bson.Document
 
@@ -34,7 +34,7 @@ object HealthData {
         client.close()
         returnArr.iterator
       })
-      .map(record => (new Semantic(
+      .map(record => (new SemanticTextMac(
         queryText = record.getString("query_text"),
         domain = record.getString("return_domain"),
         intent = record.getString("return_intent"),
