@@ -1,9 +1,9 @@
 package entity
 
-class DiseaseChat(
+class KeyWordChat(
                 val queryText: String,
                 val domain: String,
-                val disease: String) extends Serializable {
+                val keyWord: String) extends Serializable {
 
   override def hashCode(): Int = {
     var result = 17
@@ -13,7 +13,7 @@ class DiseaseChat(
 
   override def equals(obj: Any): Boolean = {
     obj match {
-      case other: DiseaseChat =>
+      case other: KeyWordChat =>
         other.queryText.equals(this.queryText)
       case _ =>
         false

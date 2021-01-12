@@ -1,76 +1,40 @@
 package spark
 
-import com.alibaba.fastjson.JSONObject
+import com.alibaba.fastjson.JSON
 import com.mongodb.spark.MongoSpark
-import com.mongodb.spark.config.WriteConfig
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.bson.Document
-
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import util.StringUtil
 
 object Common {
 
   def main(args: Array[String]): Unit = {
-    val sc = SparkSession.builder()
-      .config("spark.mongodb.input.uri", "mongodb://10.66.188.17/semantic." + args(0))
-      .config("spark.mongodb.output.uri", "mongodb://10.66.188.17/semantic.placeholder")
-      .getOrCreate()
 
-    val writeOverrides = mutable.Map[String, String]()
-    writeOverrides.put("collection", args(0)+"_single")
-    writeOverrides.put("writeConcern.w", "majority")
-    var writeConfig = WriteConfig.create(sc.sparkContext).withOptions(writeOverrides)
+    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_tv_domains_11-12")
+    val sc = new SparkContext(conf)
 
-    val rdd = MongoSpark.load(sc)
+    val words = sc.textFile(System.getenv("SPARK_YARN_STAGING_DIR")+"/domains.txt").collect.toList
+    val broadcast = sc.broadcast(words)
 
-    val cache = rdd.rdd
-      .map(record => {
-        val semantic = record.getAs[Row]("semantic")
-        val json = new JSONObject()
-        val map = semantic.getValuesMap(semantic.schema.fieldNames)
-        map.foreach(record => {
-          if(record._2 != null){
-            json.put(record._1, record._2)
-          }
-        })
-        new Document()
-          .append("query_text", record.getAs[String]("query_text"))
-          .append("domain", record.getAs[String]("domain"))
-          .append("intent", record.getAs[String]("intent"))
-          .append("semantic", json)
-          .append("source_flag", record.getAs[Int]("source_flag"))
-          .append("mac", record.getAs[String]("mac"))
-          .append("count", record.getAs[Int]("count"))
+    val input = sc.textFile("hdfs://hadoop1:9000/execDir")
+
+    val result = input
+      .map(JSON.parseObject)
+      .filter(record => {
+        val domain = record.getString("return_domain")
+        StringUtil.isNotEmpty(domain) &&
+          broadcast.value.contains(domain)
       })
-      .map(record => (record.getString("mac"), record))
-      .combineByKey(
-        v => ArrayBuffer[Document](v),
-        (c: ArrayBuffer[Document], v: Document) => c += v,
-        (c1: ArrayBuffer[Document], c2: ArrayBuffer[Document]) => c1 ++ c2
-      )
-      .cache()
+      .map(record => ((record.getString("sversion"), record.getString("return_domain")), 1))
+      .reduceByKey(_+_)
+      .map(record => new Document()
+        .append("sversion", record._1._1)
+        .append("domain", record._1._2)
+        .append("count", record._2))
 
-    val result = cache
-      .filter(record => record._2.size == 1)
-      .map(record => record._2(0))
+    MongoSpark.save(result)
 
-    MongoSpark.save(result, writeConfig)
-
-    writeOverrides.put("collection", args(0)+"_many")
-    writeConfig = WriteConfig.create(sc.sparkContext).withOptions(writeOverrides)
-
-    val result2 = cache
-      .filter(record => record._2.size > 1)
-      .map(record => {
-        var count = 0
-        record._2.foreach(doc => count += doc.getInteger("count"))
-        new Document().append("mac", record._1).append("count", count)
-      })
-
-    MongoSpark.save(result2, writeConfig)
-
-    sc.close()
+    sc.stop()
   }
 
 }
