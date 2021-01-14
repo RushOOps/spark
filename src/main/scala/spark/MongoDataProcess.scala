@@ -9,6 +9,10 @@ import org.bson.Document
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
+/**
+ * 根据mac地址和请求文本去重的表，将mac地址count为1的和大于1的请求分离成两个表
+ */
+
 object MongoDataProcess {
 
   def main(args: Array[String]): Unit = {
@@ -70,7 +74,7 @@ object MongoDataProcess {
 
     MongoSpark.save(result2, writeConfig)
 
-    sc.close()
+    sc.stop()
   }
 
 }
