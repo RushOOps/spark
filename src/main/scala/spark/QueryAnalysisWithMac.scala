@@ -3,7 +3,7 @@ package spark
 import com.alibaba.fastjson.{JSON, JSONObject}
 import com.mongodb.MongoClient
 import com.mongodb.spark.MongoSpark
-import entity.SemanticTextMac
+import entity.SemanticTestMac
 import org.apache.spark.{SparkConf, SparkContext}
 import org.bson.Document
 import util.StringUtil
@@ -40,7 +40,7 @@ object QueryAnalysisWithMac {
         returnArr.iterator
       })
       .map(record => {
-        val semantic = new SemanticTextMac(
+        val semantic = new SemanticTestMac(
           record.getString("query_text"),
           record.getString("return_domain"),
           record.getString("return_intent"),

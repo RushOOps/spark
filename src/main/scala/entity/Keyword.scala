@@ -2,12 +2,13 @@ package entity
 
 import com.alibaba.fastjson.JSONObject
 
-class SemanticText(
-                val queryText: String,
-                val domain: String,
-                val intent: String,
-                val semantic: JSONObject,
-                val sourceFlag: Int) extends Serializable {
+class Keyword(
+               val queryText: String,
+               val domain: String,
+               val intent: String = null,
+               val semantic: JSONObject = null,
+               val mac: String = null,
+               val keyword: String) extends Serializable {
 
   override def hashCode(): Int = {
     var result = 17
@@ -17,7 +18,7 @@ class SemanticText(
 
   override def equals(obj: Any): Boolean = {
     obj match {
-      case other: SemanticText =>
+      case other: Keyword =>
         other.queryText.equals(this.queryText)
       case _ =>
         false

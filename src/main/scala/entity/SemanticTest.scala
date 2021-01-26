@@ -1,9 +1,13 @@
 package entity
 
-class KeyWordChat(
+import com.alibaba.fastjson.JSONObject
+
+class SemanticTest(
                 val queryText: String,
                 val domain: String,
-                val keyWord: String) extends Serializable {
+                val intent: String,
+                val semantic: JSONObject,
+                val sourceFlag: Int) extends Serializable {
 
   override def hashCode(): Int = {
     var result = 17
@@ -13,7 +17,7 @@ class KeyWordChat(
 
   override def equals(obj: Any): Boolean = {
     obj match {
-      case other: KeyWordChat =>
+      case other: SemanticTest =>
         other.queryText.equals(this.queryText)
       case _ =>
         false

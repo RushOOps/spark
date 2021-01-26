@@ -2,7 +2,7 @@ package entity
 
 import com.alibaba.fastjson.JSONObject
 
-class SemanticTextMac(
+class SemanticTestMac(
                 val queryText: String,
                 val domain: String,
                 val intent: String = null,
@@ -19,7 +19,7 @@ class SemanticTextMac(
 
   override def equals(obj: Any): Boolean = {
     obj match {
-      case other: SemanticTextMac =>
+      case other: SemanticTestMac =>
         other.queryText.equals(this.queryText) &&
           other.queryMac.equals(this.queryMac)
       case _ =>
