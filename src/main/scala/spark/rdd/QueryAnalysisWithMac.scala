@@ -1,4 +1,4 @@
-package spark
+package spark.rdd
 
 import com.alibaba.fastjson.{JSON, JSONObject}
 import com.mongodb.MongoClient

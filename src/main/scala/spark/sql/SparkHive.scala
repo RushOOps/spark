@@ -1,4 +1,4 @@
-package spark
+package spark.sql
 
 import org.apache.spark.sql.SparkSession
 

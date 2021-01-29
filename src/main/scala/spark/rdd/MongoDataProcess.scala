@@ -1,4 +1,4 @@
-package spark
+package spark.rdd
 
 import com.alibaba.fastjson.JSONObject
 import com.mongodb.spark.MongoSpark

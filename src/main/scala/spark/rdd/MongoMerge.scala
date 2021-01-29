@@ -1,4 +1,4 @@
-package spark
+package spark.rdd
 
 import com.mongodb.spark.MongoSpark
 import org.apache.spark.sql.SparkSession
