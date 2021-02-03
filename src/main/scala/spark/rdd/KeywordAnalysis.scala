@@ -1,13 +1,14 @@
 package spark.rdd
 
 import com.alibaba.fastjson.JSON
-import com.mongodb.MongoClient
 import com.mongodb.spark.MongoSpark
+import com.mongodb.spark.config.WriteConfig
 import org.apache.spark.{SparkConf, SparkContext}
 import org.bson.Document
+import spark.scalautil.ScalaUtil.hasKeyword
 import util.StringUtil
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable
 
 /**
  * 根据关键词抽取数据
@@ -15,46 +16,50 @@ import scala.collection.mutable.ArrayBuffer
 
 object KeywordAnalysis {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic." + args(0))
+    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.placeholder")
     val sc = new SparkContext(conf)
 
-    val keyword = Array("高血压", "血压高", "高血脂", "血脂高", "高血糖", "血糖高")
+    val writeOverrides = mutable.Map[String, String]()
+    writeOverrides.put("collection", "semantic_"+args(0))
+    writeOverrides.put("writeConcern.w", "majority")
+    var writeConfig = WriteConfig.create(sc).withOptions(writeOverrides)
+
+    val keyword = Array("中医", "中药")
     val bcKeyword = sc.broadcast(keyword)
 
     val input = sc.textFile("hdfs://hadoop1:9000/execDir")
-    val result = input
+    val cache = input
       .map(JSON.parseObject)
-      .filter(record => StringUtil.isNotEmpty(record.getString("query_text")) &&
-        StringUtil.isNotEmpty(record.getString("query_mac")))
-      .flatMap(record => {
+      .filter(record => {
         val queryText = record.getString("query_text")
-        val returnArr = ArrayBuffer.empty[((String, String), Int)]
-        for (k <- bcKeyword.value) {
-          if (queryText.contains(k)) {
-            returnArr.append(((record.getString("query_mac"), k), 1))
-          }
-        }
-        returnArr
+        StringUtil.isNotEmpty(queryText) && hasKeyword(bcKeyword.value, queryText)
       })
-      .reduceByKey(_+_)
-      .mapPartitions(partition => {
-        val client = new MongoClient("10.66.188.17", 27017)
-        val collection = client.getDatabase("SemanticLog").getCollection("mac_label")
-        val returnArr = ArrayBuffer.empty[((String, String), Int)]
-        partition.foreach(record => {
-          if (collection.countDocuments(new Document("mac", record._1._1)) == 0) {
-            returnArr.append(record)
-          }
-        })
-        client.close()
-        returnArr.iterator
-      })
-      .map(record => new Document()
-        .append("mac", record._1._1)
-        .append("disease", record._1._2)
-        .append("count", record._2)
-      )
+      .cache()
 
-    MongoSpark.save(result)
+    val queryResult = cache
+      .map(r => (r.getString("query_text"),1))
+      .reduceByKey(_+_)
+      .map(r => new Document()
+        .append("query_text", r._1)
+        .append("count", r._2))
+
+    MongoSpark.save(queryResult, writeConfig)
+
+    writeOverrides.put("collection", "semantic_"+args(1))
+    writeConfig = WriteConfig.create(sc).withOptions(writeOverrides)
+
+    val macResult = cache
+      .filter(r => StringUtil.isNotEmpty(r.getString("query_mac")))
+      .map(r => (r.getString("query_mac"), 1))
+      .reduceByKey(_+_)
+      .map(r => new Document()
+        .append("mac", r._2)
+        .append("count", r._2))
+
+    MongoSpark.save(macResult, writeConfig)
+
+    sc.stop()
   }
+
+
 }
