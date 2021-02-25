@@ -4,18 +4,19 @@ import org.apache.spark.sql.SparkSession
 
 import java.time.LocalDate
 
-object SparkHive {
+object SparkHiveConnect {
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
       .builder()
       .master("local[*]")
       .appName("test")
-      .config("spark.sql.warehouse.dir", "hdfs://hadoop1:9000/user/hive/warehouse")
+      .config("spark.sql.warehouse.dir", "hdfs://localhost:9000/user/hive/warehouse")
+      .config("hive.metastore.uris", "thrift://localhost:9083")
       .enableHiveSupport()
       .getOrCreate()
 
-    spark.sql("select count(*) from semantic.semantic").rdd.saveAsTextFile("hdfs://hadoop1:9000/output_"+LocalDate.now)
+    spark.sql("show databases").show()
 
     spark.stop()
   }

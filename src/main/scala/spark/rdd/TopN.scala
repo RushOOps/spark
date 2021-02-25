@@ -1,7 +1,7 @@
 package spark.rdd
 
 import com.alibaba.fastjson.JSON
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{Partitioner, SparkConf, SparkContext}
 
 import java.time.LocalDate
 
@@ -28,4 +28,3 @@ object TopN {
 
   }
 }
-
