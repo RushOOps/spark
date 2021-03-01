@@ -29,6 +29,7 @@ object StreamingKafkaProd {
       Subscribe[String, String](topics, kafkaParams)
     )
 
+    // 只取值，读出来的key是null。本地测试经常出不来结果应该是网络原因。
     batch.map(record => record.value).print()
 
     streamingContext.start()
