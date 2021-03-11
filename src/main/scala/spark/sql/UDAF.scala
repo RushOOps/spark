@@ -31,9 +31,9 @@ object UDAF {
 
 class StrGroupCount extends UserDefinedAggregateFunction{
 
-  override def inputSchema: StructType = StructType(Array(StructField("name", StringType, nullable = true)))
+  override def inputSchema: StructType = StructType(StructField("name", StringType, nullable = true) :: Nil)
 
-  override def bufferSchema: StructType = StructType(Array(StructField("count", IntegerType, nullable = true)))
+  override def bufferSchema: StructType = StructType(StructField("count", IntegerType, nullable = true) :: Nil)
 
   override def dataType: DataType = IntegerType
 
