@@ -9,7 +9,7 @@ import util.StringUtil
 
 /**
  * arg(0)：输出到的mongo数据库，如果没有会自动新建
- * arg(1)：上传的参数文件的名称（包括后缀），一般为domain.txt，根据这个参数文件指定抽取数据的领域
+ * arg(1)：上传的参数文件的名称（包括后缀），一般为domains.txt，根据这个参数文件指定抽取数据的领域
  */
 
 object SemanticTest {
