@@ -18,20 +18,16 @@ object Common {
 
     val input = sc.textFile("hdfs://hadoop1:9000/execDir")
 
-    val target = input
+    val result = input
       .map(JSON.parseObject)
       .filter(record => {
         val query = record.getJSONObject("query")
-        query != null && query.getString("isNew").equals("0")
+        query != null && query.getString("isNew").equals("0") && StringUtil.isNotEmpty(record.getString("query_mac"))
       })
-      .cache()
-
-    val macResult = target
-      .filter(record => StringUtil.isNotEmpty(record.getString("query_mac")))
       .map(record => (record.getString("query_mac"),1))
       .reduceByKey(_+_)
 
-    MongoSpark.save(macResult)
+    MongoSpark.save(result)
 
     sc.stop()
   }
