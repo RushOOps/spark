@@ -3,36 +3,35 @@ package spark.rdd
 import com.alibaba.fastjson.JSON
 import com.mongodb.spark.MongoSpark
 import org.apache.spark.{SparkConf, SparkContext}
-import org.bson.Document
 import util.StringUtil
+
+/**
+ * 统计"isNew":"0"的mac地址数量，去重聚合后列表输出到mongo
+ */
 
 object Common {
 
   def main(args: Array[String]): Unit = {
 
-    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic.semantic_tv_domains_11-12")
+    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://semantic:semantic22s2@172.17.1.181:27017/semantic."+args(0))
     val sc = new SparkContext(conf)
-
-    val words = sc.textFile(System.getenv("SPARK_YARN_STAGING_DIR")+"/domains.txt").collect.toList
-    val broadcast = sc.broadcast(words)
 
     val input = sc.textFile("hdfs://hadoop1:9000/execDir")
 
-    val result = input
+    val target = input
       .map(JSON.parseObject)
       .filter(record => {
-        val domain = record.getString("return_domain")
-        StringUtil.isNotEmpty(domain) &&
-          broadcast.value.contains(domain)
+        val query = record.getJSONObject("query")
+        query != null && query.getString("isNew").equals("0")
       })
-      .map(record => ((record.getString("sversion"), record.getString("return_domain")), 1))
-      .reduceByKey(_+_)
-      .map(record => new Document()
-        .append("sversion", record._1._1)
-        .append("domain", record._1._2)
-        .append("count", record._2))
+      .cache()
 
-    MongoSpark.save(result)
+    val macResult = target
+      .filter(record => StringUtil.isNotEmpty(record.getString("query_mac")))
+      .map(record => (record.getString("query_mac"),1))
+      .reduceByKey(_+_)
+
+    MongoSpark.save(macResult)
 
     sc.stop()
   }

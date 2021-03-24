@@ -8,14 +8,14 @@ import org.bson.Document
 import util.StringUtil
 
 /**
- * arg(0)：输出到的mongo数据库，如果没有会自动新建
- * arg(1)：上传的参数文件的名称（包括后缀），一般为domains.txt，根据这个参数文件指定抽取数据的领域
+ * args(0)：输出到的mongo数据库的表名，如果没有会自动新建
+ * args(1)：上传的参数文件的名称（包括后缀），一般为domains.txt，根据这个参数文件指定抽取数据的领域
  */
 
 object SemanticTest {
   def main(args: Array[String]): Unit = {
 
-    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://10.66.188.17:27017/semantic."+args(0))
+    val conf = new SparkConf().set("spark.mongodb.output.uri", "mongodb://semantic:semantic22s2@172.17.1.181:27017/semantic."+args(0))
     val sc = new SparkContext(conf)
 
     val domains = sc.textFile(System.getenv("SPARK_YARN_STAGING_DIR")+"/"+args(1)).collect.toList
