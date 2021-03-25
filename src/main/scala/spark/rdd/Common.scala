@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON
 import com.mongodb.spark.MongoSpark
 import org.apache.spark.{SparkConf, SparkContext}
 import org.bson.Document
-import util.StringUtil
 
 /**
  * 统计"isNew":"0"的mac地址数量，去重聚合后列表输出到mongo
